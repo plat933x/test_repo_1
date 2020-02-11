@@ -1,0 +1,38 @@
+import config
+import numpy as np
+import control
+def Audio_level(param=0):
+    if config.channel==1:
+        level_list=[]
+        # sample = [config.A_cut[0+44100*i:44100*(i+1)] for i in range(int(len(config.A_cut) / 44100))]
+        # for i in sample:
+        try:
+            ret = np.amax(config.A_cut)
+            if ret == 0:
+                return (f'{0}{"DB"}')
+            decibelAmax = int(20 * np.log10(np.sqrt(np.mean(np.absolute(ret) ** 2)))) #for maksimum value <- this
+            decibelAaverage = int(control.mag2db(np.average(np.abs(config.A_cut)))) # for average value <- this
+            if decibelAaverage <= 25:
+                return "Mute"
+            else:
+                return "{} DB max {} DB ".format(decibelAaverage,decibelAmax)
+        except OverflowError:
+            print (f'{0}{"DB"}')
+    else:
+        if param == 1:
+            A1 = config.A_cut[-88200:-10000]
+            B1 = config.B_cut[10000:88200]
+        else:
+            A1 = config.A_cut[-88200:]
+            B1 = config.B_cut[:88200]
+        decibelAmax=int(20*np.log10(np.sqrt(np.mean(np.absolute(np.max(A1))**2))))
+        decibelAaverage = int(control.mag2db(np.average(np.abs(A1))))
+        decibelBmax=int(20*np.log10(np.sqrt(np.mean(np.absolute(np.max(B1))**2))))
+        decibelBaverage = int(control.mag2db(np.average(np.abs(B1))))
+        # print(decibelA,"DB")
+        # print(decibelB,"DB")
+        diff=np.absolute(decibelAaverage)-np.absolute(decibelBaverage)
+        if diff >= 5:
+            return "{} ,first average: {}DB max: {}DB second average: {}DB max: {}DB".format(-1,decibelAaverage,decibelAmax,decibelBaverage,decibelBmax)
+        else:
+            return "{} ,first average: {}DB max: {}DB second average: {}DB max: {}DB".format(0,decibelAaverage,decibelAmax,decibelBaverage,decibelBmax)

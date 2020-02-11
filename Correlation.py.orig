@@ -1,0 +1,50 @@
+import numpy as np
+import config
+from scipy.fftpack import irfft
+from scipy.stats import kurtosis
+def delay(que,k):
+    counter = 0
+    time_FFT_A = np.array([])
+    time_FFT_B = np.array([])
+    for time, value in enumerate(config.A_cut):
+        try:
+            if time % 4410 == 0:
+                if len(config.A_cut[counter:time]) > 0:
+                    time_FFT_A = np.append(time_FFT_A, [irfft(config.A_cut[counter:time])])
+                    counter = time
+        except ZeroDivisionError:
+            pass
+    counter = 0
+    for time, value in enumerate(config.B_cut):
+        try:
+            if time % 4410 == 0:
+                if len(config.B_cut[counter:time]) > 0:
+                    time_FFT_B = np.append(time_FFT_B, [irfft(config.B_cut[counter:time])])
+                    counter = time
+        except ZeroDivisionError:
+            pass
+    corr = np.correlate(time_FFT_A, time_FFT_B, "full")
+    maks = np.argmax(np.absolute(corr))
+    if maks < 20000:
+        sample2kurtosis = corr[:maks + 20000]
+    else:
+        sample2kurtosis = corr[maks - 20000:maks + 20000]
+    config.kurtosiss = kurtosis(sample2kurtosis)
+    config.match_counter = 0
+    # plt.plot(corr)
+    # plt.show()
+    # print('Kurtosiss value: ',config.kurtosiss)
+    for x, j in enumerate(corr[maks - 5000:maks + 5000]):
+        if x < 4900 or x > 5100:
+            if j > np.amax(corr) * 0.30:
+                config.match_counter = config.match_counter + 1
+    # print('Peaks: ',config.match_counter)
+    # print('Przesunięcie =', np.argmax(corr) - (len(time_FFT_B) - 1))
+    if config.match_counter == 0 and config.kurtosiss > 50:
+        que.put(0)
+        return 0
+    else:
+        que.put(-1)
+        return -1
+
+    zmienna = np.fft.fft
