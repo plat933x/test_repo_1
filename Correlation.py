@@ -2,8 +2,7 @@ import numpy as np
 import config
 from scipy.fftpack import irfft
 from scipy.stats import kurtosis
-from timeit import default_timer as timer
-import matplotlib.pyplot as plt
+
 def delay(data1,data2,q5):
     time_FFT_A = np.array([])
     time_FFT_B = np.array([])
@@ -22,10 +21,10 @@ def delay(data1,data2,q5):
         sample2kurtosis = corr[maks - 20000:maks + 20000]
     kurtosiss = kurtosis(sample2kurtosis)
     match_counter = 0
+
     for x, j in enumerate(corr[maks - 5000:maks + 5000]):
         if x < 4900 or x > 5100:
             if j > np.amax(corr) * 0.30:
                 match_counter +=1
-    # print('Peaks: ',match_counter)
-    # print('Przesunięcie =', np.argmax(corr) - (len(time_FFT_B) - 1))
+
     q5.put([kurtosiss,match_counter])

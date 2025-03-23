@@ -1,14 +1,12 @@
-import sys
-import time
 import csv
-from selenium import webdriver
+import itertools
 
+with open("csv_data.csv", newline='', encoding='utf-8') as file:
+    reader = csv.reader(file)
+    for index, element in enumerate(itertools.islice(reader, 8)):
+        print(f"{index}: {element}")
+    print()
 
-with open('tnrref.csv', 'rt', encoding='utf8') as csvfile:
-    langs = csv.reader(csvfile, delimiter=',', quotechar='"')
-    for i in range(10):
-        print(" ")
-
-users = [3,4,"kupa"]
-print(users[0])
-
+    eight_row = next(reader)
+    eight_element = eight_row[0]
+    print(f"Next row out of for loop: {eight_element}")
